@@ -15,30 +15,33 @@ AI-powered skin analysis platform with disease detection, personalized skincare 
 
 - **Python 3.12** - https://www.python.org/downloads/
 - **Node.js 18+** - https://nodejs.org/
+- **Git LFS** - https://git-lfs.github.com/ (for downloading models)
 
 ### Installation
 ```bash
-# 1. Clone repository
+# 1. Install Git LFS (one-time setup)
+git lfs install
+
+# 2. Clone repository (models will download automatically via Git LFS)
 git clone https://github.com/yourusername/skincare-ai.git
 cd skincare-ai
 
-# 2. Setup Backend
+# Git LFS will automatically download model files (~2-3GB)
+# This may take 5-10 minutes depending on your internet speed
+
+# 3. Setup Backend
 cd skincare-backend
 python -m venv venv
 source venv/bin/activate          # Mac/Linux
 venv\Scripts\activate             # Windows
 pip install -r requirements.txt
 
-# 3. Setup Frontend
+# 4. Setup Frontend
 cd ../skincaref/skincare-app
 npm install
-
-# 4. Add Model Files
-# Download models from: [YOUR GOOGLE DRIVE LINK]
-# Extract to: skincare-backend/models/
 ```
 
-### Running
+### Running the Application
 
 **Terminal 1 (Backend):**
 ```bash
@@ -55,42 +58,134 @@ npm run dev
 ```
 
 **Access:**
-- Frontend: http://localhost:5173
-- Backend: http://localhost:5000
+- 🌐 Frontend: http://localhost:5173
+- 🔧 Backend API: http://localhost:5000
+- ✅ Health Check: http://localhost:5000/health
 
 ## 📂 Project Structure
 ```
 skincare-ai/
-├── skincare-backend/       # Flask API
-│   ├── models/            # AI models (download separately)
-│   ├── routes/            # API endpoints
-│   ├── utils/             # Helper functions
-│   └── app.py
+├── skincare-backend/           # Flask API
+│   ├── models/                 # AI models (via Git LFS)
+│   │   ├── dermnet_densenet121/
+│   │   ├── dermnet_effnet_b3/
+│   │   └── skin_type_model.pth
+│   ├── routes/                 # API endpoints
+│   │   ├── disease.py
+│   │   ├── skincare.py
+│   │   └── chatbot_route.py
+│   ├── utils/                  # Helper functions
+│   ├── data/
+│   │   └── skincare_knowledge.json
+│   ├── app.py
+│   ├── config.py
+│   └── requirements.txt
+│
 └── skincaref/
-    └── skincare-app/      # React UI
+    └── skincare-app/           # React Frontend
+        ├── src/
+        │   ├── components/
+        │   ├── services/
+        │   └── App.jsx
+        ├── package.json
+        └── vite.config.js
+```
+
+## 🔧 Troubleshooting
+
+### **Models not downloading?**
+
+If models didn't download automatically:
+```bash
+# Pull LFS files manually
+git lfs pull
+
+# Verify models downloaded
+ls -lh skincare-backend/models/
+```
+
+### **Git LFS not installed?**
+
+Install Git LFS first:
+- **Windows:** Download from https://git-lfs.github.com/
+- **Mac:** `brew install git-lfs`
+- **Linux:** `sudo apt-get install git-lfs`
+
+Then run:
+```bash
+git lfs install
+git lfs pull
+```
+
+### **"Module not found" error**
+
+Make sure virtual environment is activated:
+```bash
+# You should see (venv) in your terminal
+source venv/bin/activate    # Mac/Linux
+venv\Scripts\activate       # Windows
+```
+
+### **Port already in use**
+```bash
+# Kill process on port 5000 or 5173
+# Windows: taskkill /F /PID <PID>
+# Mac/Linux: kill -9 <PID>
 ```
 
 ## 📊 Tech Stack
 
 **Backend:**
-- Flask
-- TensorFlow 2.15 (Disease Detection Ensemble)
-- PyTorch 2.1 (Skin Type Classification)
-- HuggingFace Transformers (Chatbot)
+- Flask (REST API)
+- TensorFlow 2.15 (Disease Detection Ensemble - DenseNet121 + EfficientNetB3)
+- PyTorch 2.1 (Skin Type Classification - EfficientNetB3)
+- HuggingFace Transformers (Chatbot - BlenderBot)
+- RapidFuzz (Fuzzy matching for stored responses)
 
 **Frontend:**
-- React 18 + Vite
-- Modern CSS (No frameworks)
-- Axios
+- React 18
+- Vite (Build tool)
+- Axios (API client)
+- Lucide React (Icons)
+- Modern CSS (Custom styling)
+
+**Models:**
+- Disease Detection: 93% accuracy, 23 classes
+- Skin Type: 89% accuracy, 3 classes (Dry, Normal, Oily)
+- Knowledge Base: 16+ Q&A pairs with natural remedies
+
+## 🎯 Features in Detail
+
+### Disease Detection
+- Ensemble of DenseNet121 + EfficientNetB3
+- Detects 23 skin conditions
+- Returns top 3 predictions with confidence scores
+
+### Skincare Analysis  
+- AI-powered skin type detection
+- Personalized routines (morning/evening/weekly)
+- Natural, commercial, and home remedy options
+- Lifestyle tips based on questionnaire
+
+### AI Chatbot
+- Hybrid approach: Stored answers + AI generation
+- 70-80% instant responses via fuzzy matching
+- Free HuggingFace model (no API costs)
 
 ## 🤝 Contributing
 
-Pull requests are welcome!
+Pull requests are welcome! For major changes, please open an issue first.
 
 ## 📝 License
 
 MIT
 
+## 🙏 Acknowledgments
+
+- DermNet dataset for disease classification
+- Roboflow for skin type dataset
+- HuggingFace for pretrained models
+
 ---
 
-Made with 💙
+**Made with 💙**
