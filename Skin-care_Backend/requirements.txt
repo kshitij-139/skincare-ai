@@ -1,0 +1,11 @@
+flask
+flask-cors
+tensorflow
+torch
+torchvision
+pillow
+numpy
+transformers
+rapidfuzz
+python-dotenv
+sentencepiece

@@ -1,0 +1,49 @@
+### Health Check
+GET http://localhost:5000/health
+
+### Home
+GET http://localhost:5000/
+
+### Disease Detection
+POST http://localhost:5000/api/disease/analyze
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="image"; filename="test_face.jpg"
+Content-Type: image/jpeg
+
+< ./test_images/test_face.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Skincare Analysis
+POST http://localhost:5000/api/skincare/analyze
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="image"; filename="test_face.jpg"
+Content-Type: image/jpeg
+
+< ./test_images/test_face.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="questionnaire"
+
+{"concerns": ["Acne", "Dark Circles"], "sleep_hours": "5-6 hours", "water_intake": "3-5 glasses", "stress_level": "Moderate"}
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Chatbot - Stored Answer
+POST http://localhost:5000/api/chatbot/chat
+Content-Type: application/json
+
+{
+  "message": "how to treat acne",
+  "skin_type": "Oily"
+}
+
+### Chatbot - AI Generated
+POST http://localhost:5000/api/chatbot/chat
+Content-Type: application/json
+
+{
+  "message": "is coconut oil good for my face",
+  "skin_type": "Dry"
+}
