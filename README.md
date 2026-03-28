@@ -67,8 +67,7 @@ npm run dev
 skincare-ai/
 ├── skincare-backend/           # Flask API
 │   ├── models/                 # AI models (via Git LFS)
-│   │   ├── dermnet_densenet121/
-│   │   ├── dermnet_effnet_b3/
+│   │   ├── final_ensemble_model_v2.pth/
 │   │   └── skin_type_model.pth
 │   ├── routes/                 # API endpoints
 │   │   ├── disease.py
@@ -149,14 +148,14 @@ venv\Scripts\activate       # Windows
 - Modern CSS (Custom styling)
 
 **Models:**
-- Disease Detection: 85% accuracy, 10 classes
+- Disease Detection: 85% accuracy, 10 classes 
 - Skin Type: 89% accuracy, 3 classes (Dry, Normal, Oily)
 - Knowledge Base: 175+ Q&A pairs with natural remedies
 
 ## 🎯 Features in Detail
 
 ### Disease Detection
-- Ensemble of ResNet18 + EfficientNetB3
+- Ensemble Model: EfficientNet-B3 + ResNet18
 - Detects 10 skin conditions
 
 ### Skincare Analysis  
