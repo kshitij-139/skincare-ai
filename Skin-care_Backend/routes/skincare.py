@@ -3,6 +3,7 @@ Skincare Analysis Routes - With Concern-Specific Advice
 """
 from flask import Blueprint, request, jsonify
 from utils.image_processing import preprocess_image_pytorch
+from utils.image_processing import preprocess_image_pytorch as preprocess_for_skin_type
 from utils.routine_generator import generate_skincare_routine
 import torch
 import json
@@ -22,6 +23,7 @@ def init_skincare_route(st_model, st_classes, torch_device, chatbot_instance=Non
     SKIN_TYPE_CLASSES = st_classes
     device = torch_device
     chatbot = chatbot_instance
+    return skincare_bp
 
 @skincare_bp.route('/analyze', methods=['POST'])
 def analyze_skincare():
@@ -54,7 +56,7 @@ def analyze_skincare():
         # AI: Skin Type Detection (PyTorch)
         # ============================================================
         
-        img_tensor = preprocess_image_pytorch(image_data)
+        img_tensor = preprocess_for_skin_type(image_data , target_size=(224, 224))
         img_tensor = img_tensor.to(device)
         
         with torch.no_grad():
@@ -175,3 +177,14 @@ def analyze_skincare():
             "success": False,
             "error": str(e)
         }), 500
+    
+# def init_skincare_route(st_model, st_classes, torch_device, chatbot_instance=None):
+#     """Initialize route with skin type model and chatbot"""
+#     global skin_type_model, SKIN_TYPE_CLASSES, device, chatbot
+#     skin_type_model = st_model
+#     SKIN_TYPE_CLASSES = st_classes
+#     device = torch_device
+#     chatbot = chatbot_instance
+    
+#     # This return statement is what was missing!
+#     return skincare_bp

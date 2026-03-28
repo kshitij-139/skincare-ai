@@ -4,7 +4,7 @@ AI-powered skin analysis platform with disease detection, personalized skincare 
 
 ## ✨ Features
 
-- 🔬 **Disease Detection** - 93% accurate detection of 23 skin diseases
+- 🔬 **Disease Detection** - 95% accurate detection of 10 skin diseases
 - 💆 **Skincare Analysis** - Personalized routines based on skin type (Dry/Normal/Oily)
 - 💬 **AI Chatbot** - 24/7 skincare advice with natural remedies
 - 🌿 **Natural + Commercial Options** - Home remedies alongside product recommendations
@@ -137,7 +137,6 @@ venv\Scripts\activate       # Windows
 
 **Backend:**
 - Flask (REST API)
-- TensorFlow 2.15 (Disease Detection Ensemble - DenseNet121 + EfficientNetB3)
 - PyTorch 2.1 (Skin Type Classification - EfficientNetB3)
 - HuggingFace Transformers (Chatbot - BlenderBot)
 - RapidFuzz (Fuzzy matching for stored responses)
@@ -150,16 +149,15 @@ venv\Scripts\activate       # Windows
 - Modern CSS (Custom styling)
 
 **Models:**
-- Disease Detection: 93% accuracy, 23 classes
+- Disease Detection: 85% accuracy, 10 classes
 - Skin Type: 89% accuracy, 3 classes (Dry, Normal, Oily)
-- Knowledge Base: 16+ Q&A pairs with natural remedies
+- Knowledge Base: 175+ Q&A pairs with natural remedies
 
 ## 🎯 Features in Detail
 
 ### Disease Detection
-- Ensemble of DenseNet121 + EfficientNetB3
-- Detects 23 skin conditions
-- Returns top 3 predictions with confidence scores
+- Ensemble of ResNet18 + EfficientNetB3
+- Detects 10 skin conditions
 
 ### Skincare Analysis  
 - AI-powered skin type detection
@@ -168,24 +166,11 @@ venv\Scripts\activate       # Windows
 - Lifestyle tips based on questionnaire
 
 ### AI Chatbot
-- Hybrid approach: Stored answers + AI generation
-- 70-80% instant responses via fuzzy matching
-- Free HuggingFace model (no API costs)
+- RAG + Gemini
 
 ## 🤝 Contributing
 
 Pull requests are welcome! For major changes, please open an issue first.
 
-## 📝 License
-
-MIT
-
-## 🙏 Acknowledgments
-
-- DermNet dataset for disease classification
-- Roboflow for skin type dataset
-- HuggingFace for pretrained models
-
----
 
 **Made with 💙**

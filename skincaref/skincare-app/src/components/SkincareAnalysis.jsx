@@ -1,135 +1,181 @@
 import React, { useState } from 'react';
-import { Upload, Loader, AlertCircle, Sparkles } from 'lucide-react';
-import { analyzeSkincareWithQuestionnaire } from '../services/api';
+import { Upload, AlertCircle, Loader2 } from 'lucide-react';
+import { analyzeSkincareImage } from '../services/api';
 import Questionnaire from './Questionnaire';
 import SkincareResults from './Results/SkincareResults';
 
 const SkincareAnalysis = () => {
-  const [step, setStep] = useState(1); // 1: Upload, 2: Questionnaire, 3: Results
-  const [image, setImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [questionnaire, setQuestionnaire] = useState(null);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
 
-  const handleImageChange = (e) => {
+  const handleImageSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImage(file);
-      setImagePreview(URL.createObjectURL(file));
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setError('Please select a valid image file');
+        return;
+      }
+
+      // Validate file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        setError('Image size must be less than 10MB');
+        return;
+      }
+
+      setSelectedImage(file);
+      setPreview(URL.createObjectURL(file));
       setError(null);
+      setShowQuestionnaire(false);
+      setResults(null);
     }
   };
 
-  const handleNextToQuestionnaire = () => {
-    if (!image) {
-      setError('Please upload an image first');
+  const handleContinue = () => {
+    if (!selectedImage) {
+      setError('Please select an image first');
       return;
     }
-    setStep(2);
+    setShowQuestionnaire(true);
   };
 
-  const handleQuestionnaireSubmit = async (questionnaireData) => {
-    setQuestionnaire(questionnaireData);
+  const handleQuestionnaireComplete = async (answers) => {
+    setQuestionnaire(answers);
     setLoading(true);
     setError(null);
 
     try {
-      const data = await analyzeSkincareWithQuestionnaire(image, questionnaireData);
-      setResults(data);
-      setStep(3);
+      const response = await analyzeSkincareImage(selectedImage, answers);
+      
+      console.log('Skincare analysis response:', response);
+      
+      setResults(response);
+      
+      // Scroll to results
+      setTimeout(() => {
+        document.getElementById('skincare-results')?.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }, 100);
+      
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to analyze. Please try again.');
-      setStep(2);
+      console.error('Skincare analysis error:', err);
+      setError(
+        err.response?.data?.error || 
+        err.message || 
+        'Failed to analyze. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleStartOver = () => {
-    setStep(1);
-    setImage(null);
-    setImagePreview(null);
+  const handleReset = () => {
+    setSelectedImage(null);
+    setPreview(null);
+    setShowQuestionnaire(false);
     setQuestionnaire(null);
     setResults(null);
     setError(null);
   };
 
+  if (results) {
+    return (
+      <div id="skincare-results">
+        <SkincareResults 
+          results={results} 
+          questionnaire={questionnaire}
+          onReset={handleReset} 
+        />
+      </div>
+    );
+  }
+
+  if (showQuestionnaire) {
+    return (
+      <Questionnaire
+        onSubmit={handleQuestionnaireComplete}
+        onBack={() => setShowQuestionnaire(false)}
+        loading={loading}
+      />
+    );
+  }
+
   return (
     <div className="page-container">
       <div className="page-header">
-        <h1>✨ Skincare Analysis</h1>
-        <p>Get your personalized skincare routine with natural & commercial options</p>
+        <h1>Skincare Analysis</h1>
+        <p>Upload a photo for personalized skincare recommendations</p>
       </div>
 
-      {/* Step 1: Upload Image */}
-      {step === 1 && (
-        <div className="upload-section">
-          <div className="upload-card">
-            {!imagePreview ? (
-              <label className="upload-area">
-                <Upload size={48} />
-                <h3>Upload Your Photo</h3>
-                <p>Take a clear photo of your face in good lighting</p>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  style={{ display: 'none' }}
-                />
-              </label>
-            ) : (
-              <div className="image-preview-container">
-                <img src={imagePreview} alt="Preview" className="image-preview" />
-                <button 
-                  className="btn-secondary"
-                  onClick={() => {
-                    setImage(null);
-                    setImagePreview(null);
-                  }}
-                >
-                  Change Image
-                </button>
-              </div>
-            )}
-          </div>
-
-          {imagePreview && (
-            <button 
-              className="btn-primary"
-              onClick={handleNextToQuestionnaire}
-            >
-              Next: Answer Questions
-              <Sparkles size={20} />
-            </button>
-          )}
-
-          {error && (
-            <div className="alert alert-error">
-              <AlertCircle size={20} />
-              {error}
+      <div className="upload-section">
+        {/* Upload Area */}
+        <div className="upload-card">
+          <input
+            type="file"
+            id="skincare-image-upload"
+            accept="image/*"
+            onChange={handleImageSelect}
+            style={{ display: 'none' }}
+          />
+          
+          {preview ? (
+            <div className="image-preview-container">
+              <img src={preview} alt="Preview" className="image-preview" />
+              <button onClick={handleReset} className="btn-secondary">
+                Change Image
+              </button>
             </div>
+          ) : (
+            <label htmlFor="skincare-image-upload" className="upload-area">
+              <div className="upload-icon">
+                <Upload size={32} />
+              </div>
+              <h3>Upload Your Photo</h3>
+              <p>Clear, well-lit photo works best</p>
+              <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+                PNG, JPG up to 10MB
+              </p>
+            </label>
           )}
         </div>
-      )}
 
-      {/* Step 2: Questionnaire */}
-      {step === 2 && (
-        <Questionnaire 
-          onSubmit={handleQuestionnaireSubmit}
-          onBack={() => setStep(1)}
-          loading={loading}
-        />
-      )}
+        {/* Continue Button */}
+        {selectedImage && !loading && (
+          <button onClick={handleContinue} className="btn-primary btn-large">
+            Continue to Questionnaire
+          </button>
+        )}
 
-      {/* Step 3: Results */}
-      {step === 3 && results && (
-        <SkincareResults 
-          results={results}
-          onStartOver={handleStartOver}
-        />
-      )}
+        {/* Error Display */}
+        {error && (
+          <div className="alert alert-error">
+            <AlertCircle size={20} />
+            <span>{error}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Info Cards */}
+      <div style={{ maxWidth: '600px', margin: '3rem auto 0' }}>
+        <div className="info-card">
+          <AlertCircle size={20} />
+          <div>
+            <h4>What We Analyze</h4>
+            <p>
+              Our AI analyzes your skin type (Dry, Normal, Oily) and provides 
+              personalized routines, product recommendations, and lifestyle tips 
+              based on your concerns.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

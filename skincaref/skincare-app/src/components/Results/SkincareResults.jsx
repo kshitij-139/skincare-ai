@@ -18,14 +18,7 @@ const SkincareResults = ({ results, onStartOver }) => {
       {/* Skin Type Badge */}
       <div className="skin-type-badge">
         <div className="skin-type-info">
-          <h3>{ai_analysis.skin_type} Skin</h3>
-          <div className="confidence-bar">
-            <div 
-              className="confidence-fill"
-              style={{ width: `${ai_analysis.confidence}%` }}
-            />
-          </div>
-          <span>{ai_analysis.confidence.toFixed(2)}% confidence</span>
+          <h3>Detected Skin Type : {ai_analysis.skin_type} Skin</h3>
         </div>
       </div>
 

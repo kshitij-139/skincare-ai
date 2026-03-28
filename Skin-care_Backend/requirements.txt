@@ -1,6 +1,5 @@
 flask
 flask-cors
-tensorflow
 torch
 torchvision
 pillow
@@ -9,3 +8,6 @@ transformers
 rapidfuzz
 python-dotenv
 sentencepiece
+sentence-transformers
+faiss-cpu
+google-genai

@@ -1,76 +1,103 @@
 """
-Image preprocessing utilities for both TensorFlow and PyTorch
+Image preprocessing utilities for PyTorch models
+Updated for Ensemble (EfficientNet-B3 + ResNet18)
 """
+
+import io
 from PIL import Image
-import numpy as np
 import torch
 from torchvision import transforms
-import io
+from config import Config
 
-def preprocess_image_tensorflow(image_data, target_size=(224, 224)):
+
+def preprocess_image_pytorch(image_data, target_size=224, mean=None, std=None):
     """
-    Preprocess image for TensorFlow models (Disease Detection)
-    
+    Generic preprocessing for PyTorch models
+
     Args:
-        image_data: Binary image data
-        target_size: Target image size (width, height)
-    
-    Returns:
-        Preprocessed numpy array for TensorFlow
-    """
-    try:
-        # Open image
-        img = Image.open(io.BytesIO(image_data)).convert('RGB')
-        
-        # Resize
-        img = img.resize(target_size)
-        
-        # Convert to array and normalize
-        img_array = np.array(img) / 255.0
-        
-        # Add batch dimension
-        img_array = np.expand_dims(img_array, axis=0)
-        
-        return img_array
-    
-    except Exception as e:
-        raise ValueError(f"Error preprocessing image for TensorFlow: {str(e)}")
+        image_data: Raw image bytes
+        target_size: int or (H, W)
+        mean: normalization mean
+        std: normalization std
 
-def preprocess_image_pytorch(image_data, target_size=(224, 224)):
-    """
-    Preprocess image for PyTorch models (Skin Type)
-    
-    Args:
-        image_data: Binary image data
-        target_size: Target image size (width, height)
-    
     Returns:
-        Preprocessed PyTorch tensor
+        torch.Tensor: [1, 3, H, W]
     """
-    try:
-        # Open image
-        img = Image.open(io.BytesIO(image_data)).convert('RGB')
-        
-        # Define transforms (same as training)
-        transform = transforms.Compose([
-            transforms.Resize(target_size),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                               std=[0.229, 0.224, 0.225])
-        ])
-        
-        # Apply transforms
-        img_tensor = transform(img)
-        
-        # Add batch dimension
-        img_tensor = img_tensor.unsqueeze(0)
-        
-        return img_tensor
-    
-    except Exception as e:
-        raise ValueError(f"Error preprocessing image for PyTorch: {str(e)}")
 
-# Keep backward compatibility
-def preprocess_image(image_data, target_size=(224, 224)):
-    """Default preprocessing (TensorFlow)"""
-    return preprocess_image_tensorflow(image_data, target_size)
+    # Defaults (ImageNet)
+    if mean is None:
+        mean = Config.IMAGE_MEAN
+    if std is None:
+        std = Config.IMAGE_STD
+
+    # Ensure tuple
+    if isinstance(target_size, int):
+        target_size = (target_size, target_size)
+
+    # Load image
+    img = Image.open(io.BytesIO(image_data)).convert('RGB')
+
+    # 🔥 IMPORTANT: Use Resize (not crop) to match training
+    transform = transforms.Compose([
+        transforms.Resize(target_size),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=mean, std=std)
+    ])
+
+    img_tensor = transform(img).unsqueeze(0)
+
+    return img_tensor
+
+
+# ============================================================
+# ENSEMBLE MODEL PREPROCESSING (UPDATED)
+# ============================================================
+
+def preprocess_for_disease_detection(image_data):
+    """
+    Preprocess for ENSEMBLE model
+
+    Model expects:
+    - Size: 224x224 (IMPORTANT CHANGE)
+    - Normalization: ImageNet
+
+    Returns:
+        torch.Tensor: [1, 3, 224, 224]
+    """
+    return preprocess_image_pytorch(
+        image_data,
+        target_size=224   # 🔥 FIXED (was 300 before)
+    )
+
+
+def preprocess_for_skin_type(image_data):
+    """
+    Skin type model preprocessing (unchanged)
+    """
+    return preprocess_image_pytorch(
+        image_data,
+        target_size=Config.SKIN_TYPE_IMAGE_SIZE
+    )
+
+
+# ============================================================
+# ADVANCED (OPTIONAL - FUTURE SAFE)
+# ============================================================
+
+def preprocess_for_ensemble(image_data):
+    """
+    Explicit function for ensemble usage (cleaner naming)
+    """
+    return preprocess_for_disease_detection(image_data)
+
+
+# ============================================================
+# BACKWARD COMPATIBILITY
+# ============================================================
+
+def preprocess_image_for_disease(image_data):
+    return preprocess_for_disease_detection(image_data)
+
+
+def preprocess_image_for_skintype(image_data):
+    return preprocess_for_skin_type(image_data)

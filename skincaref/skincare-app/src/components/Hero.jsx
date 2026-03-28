@@ -19,7 +19,7 @@ const Hero = () => {
               <Stethoscope size={40} />
             </div>
             <h3>Disease Detection</h3>
-            <p>Detect 23 skin diseases using AI ensemble models</p>
+            <p>Detect 10 skin diseases using AI ensemble models</p>
             <span className="feature-arrow">
               Get Started <ArrowRight size={16} />
             </span>
@@ -41,7 +41,7 @@ const Hero = () => {
               <MessageCircle size={40} />
             </div>
             <h3>AI Assistant</h3>
-            <p>24/7 skincare advice with expert recommendations and home remedies</p>
+            <p>skincare advice with expert recommendations and home remedies</p>
             <span className="feature-arrow">
               Chat Now <ArrowRight size={16} />
             </span>
@@ -50,7 +50,7 @@ const Hero = () => {
 
         <div className="hero-stats">
           <div className="stat">
-            <p>Ensemble Disease Detection</p>
+            <p>Disease Detection</p>
           </div>
           <div className="stat">
             <p>Skin Type Classification</p>

@@ -1,70 +1,94 @@
-"""
-Disease Detection Routes - TFSMLayer Compatible
-"""
 from flask import Blueprint, request, jsonify
-from utils.image_processing import preprocess_image_tensorflow
+import torch
+from PIL import Image
+import io
 import numpy as np
-import tensorflow as tf
+from torchvision import transforms
+from config import Config
+import re
 
-disease_bp = Blueprint('disease', __name__)
-
+# Globals
 disease_model1 = None
 disease_model2 = None
-DISEASE_CLASSES = []
+disease_classes = None
+torch_device = None
 
-def init_disease_route(model1, model2, classes):
-    global disease_model1, disease_model2, DISEASE_CLASSES
+
+# ✅ CLEAN LABEL FUNCTION
+def clean_label(label):
+    label = re.sub(r'^\d+\.\s*', '', label)
+    label = re.sub(r'\s*[-]?\s*\d+(\.\d+)?k?', '', label)
+    return label.strip()
+
+
+def init_disease_route(model1, model2, classes, device):
+    global disease_model1, disease_model2, disease_classes, torch_device
+
     disease_model1 = model1
     disease_model2 = model2
-    DISEASE_CLASSES = classes
+    disease_classes = classes
+    torch_device = device
 
-@disease_bp.route('/analyze', methods=['POST'])
-def analyze_disease():
-    try:
-        if 'image' not in request.files:
-            return jsonify({"success": False, "error": "No image"}), 400
-        
-        image_data = request.files['image'].read()
-        img_array = preprocess_image_tensorflow(image_data)
-        
-        # Convert to tensor
-        img_tensor = tf.convert_to_tensor(img_array, dtype=tf.float32)
-        
-        # Predict with TFSMLayer (returns dict)
-        pred1_dict = disease_model1(img_tensor)
-        pred2_dict = disease_model2(img_tensor)
-        
-        # Extract output (key might vary, usually 'output_0' or similar)
-        # Check what keys are available
-        pred1_key = list(pred1_dict.keys())[0]
-        pred2_key = list(pred2_dict.keys())[0]
-        
-        predictions1 = pred1_dict[pred1_key].numpy()
-        predictions2 = pred2_dict[pred2_key].numpy()
-        
-        # Ensemble
-        ensemble_pred = (predictions1 + predictions2) / 2.0
-        
-        # Get top 3
-        top_indices = np.argsort(ensemble_pred[0])[-3:][::-1]
-        
-        results = []
-        for idx in top_indices:
-            results.append({
-                "disease": DISEASE_CLASSES[idx],
-                "confidence": float(ensemble_pred[0][idx] * 100)
+    blueprint = Blueprint('disease', __name__)
+
+    @blueprint.route('/analyze', methods=['POST'])
+    def analyze_disease():
+        try:
+            if 'image' not in request.files:
+                return jsonify({'error': 'No image provided'}), 400
+
+            image = request.files['image'].read()
+
+            img = Image.open(io.BytesIO(image)).convert('RGB')
+
+            transform = transforms.Compose([
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+                transforms.Normalize(Config.IMAGE_MEAN, Config.IMAGE_STD)
+            ])
+
+            img_tensor = transform(img).unsqueeze(0).to(torch_device)
+
+            # 🔥 ENSEMBLE
+            with torch.no_grad():
+                out1 = disease_model1(img_tensor)
+                out2 = disease_model2(img_tensor)
+
+                w1 = Config.ENSEMBLE_WEIGHTS["efficientnet"]
+                w2 = Config.ENSEMBLE_WEIGHTS["resnet"]
+
+                outputs = (w1 * out1 + w2 * out2)
+
+                probs = torch.softmax(outputs, dim=1).cpu().numpy()[0]
+
+            # Top-K
+            top_k = np.argsort(probs)[-Config.TOP_K_PREDICTIONS:][::-1]
+
+            results = []
+            for i, idx in enumerate(top_k):
+                raw = disease_classes[idx]
+                clean = clean_label(raw)
+
+                results.append({
+                    "disease": clean,
+                    "raw_label": raw,
+                    "confidence": round(float(probs[idx] * 100), 2),
+                    "rank": i + 1
+                })
+
+            top_conf = results[0]["confidence"]
+
+            return jsonify({
+                "status": "success" if top_conf >= Config.CONFIDENCE_THRESHOLD else "low_confidence",
+                "model": Config.DISEASE_MODEL_NAME,
+                "top_prediction": results[0],
+                "all_predictions": results,
+                "warning": top_conf < Config.CONFIDENCE_THRESHOLD
             })
-        
-        top_disease = results[0]
-        disease_detected = top_disease['confidence'] > 50
-        
-        return jsonify({
-            "success": True,
-            "disease_detected": disease_detected,
-            "top_prediction": top_disease,
-            "all_predictions": results,
-            "recommendation": "⚕️ Consult dermatologist" if disease_detected else "✅ No major diseases detected"
-        })
-    
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return jsonify({"error": str(e)}), 500
+
+    return blueprint
