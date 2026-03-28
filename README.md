@@ -4,7 +4,7 @@ AI-powered skin analysis platform with disease detection, personalized skincare 
 
 ## ✨ Features
 
-- 🔬 **Disease Detection** - 95% accurate detection of 10 skin diseases
+- 🔬 **Disease Detection** - 85% accurate detection of 10 skin diseases
 - 💆 **Skincare Analysis** - Personalized routines based on skin type (Dry/Normal/Oily)
 - 💬 **AI Chatbot** - 24/7 skincare advice with natural remedies
 - 🌿 **Natural + Commercial Options** - Home remedies alongside product recommendations
