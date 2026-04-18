@@ -19,29 +19,29 @@ class SkincareChatbot:
         print("="*70)
         
         # Load knowledge base
-        print("\n📚 Loading skincare knowledge base...")
+        print("\n Loading skincare knowledge base...")
         with open(Config.KNOWLEDGE_BASE_PATH, "r", encoding="utf-8") as f:
             data = json.load(f)
         
         self.qa_database = data["qa_database"]
-        print(f"   ✅ Loaded {len(self.qa_database)} knowledge entries")
+        print(f"    Loaded {len(self.qa_database)} knowledge entries")
         
         # Load embedding model
-        print("\n🧠 Loading SentenceTransformer...")
+        print("\n Loading SentenceTransformer...")
         self.embedder = SentenceTransformer("all-MiniLM-L6-v2")
-        print("   ✅ SentenceTransformer loaded")
+        print("    SentenceTransformer loaded")
         
         # Build FAISS index
         print("\n🔍 Building FAISS index...")
         self._build_faiss_index()
-        print(f"   ✅ FAISS index built with {self.index.ntotal} vectors")
+        print(f"    FAISS index built with {self.index.ntotal} vectors")
         
         # Initialize Gemini
-        print("\n🤖 Initializing Google Gemini...")
+        print("\n Initializing Google Gemini...")
         self._init_gemini()
         
         print("\n" + "="*70)
-        print("✅ CHATBOT READY (Gemini + FAISS RAG)")
+        print(" CHATBOT READY (Gemini + FAISS RAG)")
         print("="*70 + "\n")
     
     def _build_faiss_index(self):
@@ -84,17 +84,17 @@ class SkincareChatbot:
             api_key = os.getenv("GEMINI_API_KEY")
             
             if not api_key:
-                print("   ⚠️ GEMINI_API_KEY not found - using KB fallback")
+                print("    GEMINI_API_KEY not found - using KB fallback")
                 self.gemini_client = None
                 return
             
             self.gemini_client = genai.Client(api_key=api_key)
             
-            print("   ✅ Gemini initialized (google-genai)")
+            print("    Gemini initialized (google-genai)")
     
         except Exception as e:
-            print(f"   ⚠️ Gemini initialization failed: {e}")
-            print("   ℹ️ Falling back to direct KB responses")
+            print(f"    Gemini initialization failed: {e}")
+            print("   ℹ Falling back to direct KB responses")
             self.gemini_client = None
     
     def _retrieve_relevant_docs(self, query, k=3):
@@ -163,7 +163,7 @@ ANSWER:"""
                 return context_docs[0]["answer"]
     
         except Exception as e:
-            print(f"⚠️ Gemini generation error: {e}")
+            print(f" Gemini generation error: {e}")
             return context_docs[0]["answer"] if context_docs else self._get_fallback(query)
     
     def get_response(self, query, skin_type=None):
@@ -187,7 +187,7 @@ ANSWER:"""
             print(f"\n🔍 Query: {query}")
             if skin_type:
                 print(f"👤 Skin type: {skin_type}")
-            print("📚 Retrieved docs:")
+            print(" Retrieved docs:")
             for i, d in enumerate(docs[:3]):
                 print(f"   {i+1}. {d['question']} (score: {d['score']:.3f})")
             
@@ -205,7 +205,7 @@ ANSWER:"""
             
             # High similarity - use direct answer (fast path)
             if best_score > 0.8:
-                print(f"✅ High similarity ({best_score:.3f}) - using direct answer")
+                print(f" High similarity ({best_score:.3f}) - using direct answer")
                 
                 return {
                     "answer": best_doc["answer"],
@@ -217,7 +217,7 @@ ANSWER:"""
             
             # Medium similarity - use Gemini to contextualize
             elif best_score > 0.55:
-                print(f"🤖 Medium similarity ({best_score:.3f}) - using Gemini")
+                print(f" Medium similarity ({best_score:.3f}) - using Gemini")
                 
                 answer = self._generate_with_gemini(query, docs, skin_type)
                 
@@ -231,7 +231,7 @@ ANSWER:"""
             
             # Low similarity - fallback
             else:
-                print(f"⚠️ Low similarity ({best_score:.3f}) - using Gemini (no context)")
+                print(f" Low similarity ({best_score:.3f}) - using Gemini (no context)")
 
                 answer = self._generate_with_gemini(query, [], skin_type)
 
@@ -244,7 +244,7 @@ ANSWER:"""
                 }
         
         except Exception as e:
-            print(f"❌ Chatbot error: {e}")
+            print(f" Chatbot error: {e}")
             import traceback
             traceback.print_exc()
             

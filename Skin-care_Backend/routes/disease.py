@@ -14,7 +14,7 @@ disease_classes = None
 torch_device = None
 
 
-# ✅ CLEAN LABEL FUNCTION
+# CLEAN LABEL FUNCTION
 def clean_label(label):
     label = re.sub(r'^\d+\.\s*', '', label)
     label = re.sub(r'\s*[-]?\s*\d+(\.\d+)?k?', '', label)

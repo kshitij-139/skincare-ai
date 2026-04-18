@@ -11,17 +11,17 @@ print("="*70)
 print("\n1. Loading models...")
 model1 = tf.keras.layers.TFSMLayer('models/dermnet_densenet121_saved', call_endpoint='serving_default')
 model2 = tf.keras.layers.TFSMLayer('models/dermnet_effnet_b3_saved', call_endpoint='serving_default')
-print("   ✅ Models loaded")
+print("    Models loaded")
 
 # Load a test image (use a clear acne image)
 print("\n2. Loading test image...")
 try:
     img_path = sys.argv[1] if len(sys.argv) > 1 else 'test_image.jpg'
     img = Image.open(img_path).convert('RGB')
-    print(f"   ✅ Image loaded: {img_path}")
+    print(f"    Image loaded: {img_path}")
     print(f"   Size: {img.size}")
 except Exception as e:
-    print(f"   ❌ Error: {e}")
+    print(f"    Error: {e}")
     print("\nUsage: python debug_models.py path/to/image.jpg")
     sys.exit(1)
 
@@ -48,7 +48,7 @@ print(f"\n4. Testing different preprocessing methods:")
 print("-" * 70)
 
 # Test 1: Raw 0-255
-print("\n📊 TEST 1: Raw values (0-255)")
+print("\n TEST 1: Raw values (0-255)")
 img_test1 = np.expand_dims(img_array, axis=0)
 tensor1 = tf.convert_to_tensor(img_test1, dtype=tf.float32)
 
@@ -95,7 +95,7 @@ print(f"   Model 2 (EfficientNet):")
 print(f"      Top class: {CLASSES[np.argmax(pred2)]} ({pred2.max()*100:.2f}%)")
 
 # Test 3: ImageNet normalization
-print("\n📊 TEST 3: ImageNet normalization")
+print("\n TEST 3: ImageNet normalization")
 img_test3 = img_array / 255.0
 mean = np.array([0.485, 0.456, 0.406])
 std = np.array([0.229, 0.224, 0.225])
@@ -115,7 +115,7 @@ print(f"   Model 2 (EfficientNet):")
 print(f"      Top class: {CLASSES[np.argmax(pred2)]} ({pred2.max()*100:.2f}%)")
 
 # Test 4: DenseNet specific (Caffe mode)
-print("\n📊 TEST 4: DenseNet Caffe mode (BGR, mean subtraction)")
+print("\n TEST 4: DenseNet Caffe mode (BGR, mean subtraction)")
 img_test4 = img_array.copy()
 # RGB to BGR
 img_test4 = img_test4[..., ::-1]
@@ -139,7 +139,7 @@ for idx in top3:
 print()
 
 print("\n" + "="*70)
-print("✅ TESTING COMPLETE")
+print(" TESTING COMPLETE")
 print("="*70)
 print("\nLook for the test that gives:")
 print("  1. HIGH confidence (>80%)")

@@ -37,7 +37,7 @@ def preprocess_image_pytorch(image_data, target_size=224, mean=None, std=None):
     # Load image
     img = Image.open(io.BytesIO(image_data)).convert('RGB')
 
-    # 🔥 IMPORTANT: Use Resize (not crop) to match training
+    #  IMPORTANT: Use Resize (not crop) to match training
     transform = transforms.Compose([
         transforms.Resize(target_size),
         transforms.ToTensor(),
@@ -49,9 +49,9 @@ def preprocess_image_pytorch(image_data, target_size=224, mean=None, std=None):
     return img_tensor
 
 
-# ============================================================
+
 # ENSEMBLE MODEL PREPROCESSING (UPDATED)
-# ============================================================
+
 
 def preprocess_for_disease_detection(image_data):
     """
@@ -66,7 +66,7 @@ def preprocess_for_disease_detection(image_data):
     """
     return preprocess_image_pytorch(
         image_data,
-        target_size=224   # 🔥 FIXED (was 300 before)
+        target_size=224   
     )
 
 
@@ -80,9 +80,9 @@ def preprocess_for_skin_type(image_data):
     )
 
 
-# ============================================================
-# ADVANCED (OPTIONAL - FUTURE SAFE)
-# ============================================================
+
+
+
 
 def preprocess_for_ensemble(image_data):
     """
@@ -91,9 +91,8 @@ def preprocess_for_ensemble(image_data):
     return preprocess_for_disease_detection(image_data)
 
 
-# ============================================================
 # BACKWARD COMPATIBILITY
-# ============================================================
+
 
 def preprocess_image_for_disease(image_data):
     return preprocess_for_disease_detection(image_data)

@@ -52,9 +52,9 @@ def analyze_skincare():
                     "error": "Invalid questionnaire JSON"
                 }), 400
         
-        # ============================================================
+
         # AI: Skin Type Detection (PyTorch)
-        # ============================================================
+
         
         img_tensor = preprocess_for_skin_type(image_data , target_size=(224, 224))
         img_tensor = img_tensor.to(device)
@@ -68,11 +68,11 @@ def analyze_skincare():
         skin_type = SKIN_TYPE_CLASSES[skin_type_idx.item()]
         skin_type_confidence = float(skin_type_confidence.item() * 100)
         
-        print(f"🧴 Skin Type: {skin_type} ({skin_type_confidence:.2f}%)")
+        print(f" Skin Type: {skin_type} ({skin_type_confidence:.2f}%)")
         
-        # ============================================================
+
         # User Input
-        # ============================================================
+
         
         concerns = questionnaire.get('concerns', [])
         lifestyle = {
@@ -83,20 +83,20 @@ def analyze_skincare():
             'diet': questionnaire.get('diet', 'Not specified')
         }
         
-        # ============================================================
+
         # Generate Personalized Routine
-        # ============================================================
+
         
         routine = generate_skincare_routine(skin_type, concerns, lifestyle)
         
-        # ============================================================
+
         # Get AI Advice for Each Concern (from chatbot)
-        # ============================================================
+
         
         concern_advice = []
         
         if concerns and chatbot:
-            print(f"📋 Getting advice for concerns: {concerns}")
+            print(f" Getting advice for concerns: {concerns}")
             
             for concern in concerns:
                 # Query chatbot for each concern
@@ -115,10 +115,10 @@ def analyze_skincare():
                         "confidence": chatbot_response.get('confidence', 'medium')
                     })
                     
-                    print(f"   ✅ {concern}: {chatbot_response['source']}")
+                    print(f"    {concern}: {chatbot_response['source']}")
                 
                 except Exception as e:
-                    print(f"   ⚠️  Failed to get advice for {concern}: {e}")
+                    print(f"     Failed to get advice for {concern}: {e}")
                     # Provide fallback advice
                     concern_advice.append({
                         "concern": concern,
@@ -129,7 +129,7 @@ def analyze_skincare():
         
         elif concerns and not chatbot:
             # Chatbot not available - provide basic advice
-            print(f"⚠️  Chatbot not available for concern advice")
+            print(f"  Chatbot not available for concern advice")
             for concern in concerns:
                 concern_advice.append({
                     "concern": concern,
@@ -138,9 +138,9 @@ def analyze_skincare():
                     "confidence": "low"
                 })
         
-        # ============================================================
+
         # Compile Response
-        # ============================================================
+
         
         response = {
             "success": True,
@@ -157,7 +157,7 @@ def analyze_skincare():
             "personalized_routine": routine,
             "concern_specific_advice": concern_advice if concern_advice else None,
             "note": "All routines include natural, commercial, and home remedy options!",
-            "tip": "💡 For skin disease detection, use /api/disease/analyze"
+            "tip": " For skin disease detection, use /api/disease/analyze"
         }
         
         return jsonify(response)
@@ -169,7 +169,7 @@ def analyze_skincare():
         }), 400
     
     except Exception as e:
-        print(f"❌ Error in skincare analysis: {str(e)}")
+        print(f" Error in skincare analysis: {str(e)}")
         import traceback
         traceback.print_exc()
         
@@ -178,13 +178,3 @@ def analyze_skincare():
             "error": str(e)
         }), 500
     
-# def init_skincare_route(st_model, st_classes, torch_device, chatbot_instance=None):
-#     """Initialize route with skin type model and chatbot"""
-#     global skin_type_model, SKIN_TYPE_CLASSES, device, chatbot
-#     skin_type_model = st_model
-#     SKIN_TYPE_CLASSES = st_classes
-#     device = torch_device
-#     chatbot = chatbot_instance
-    
-#     # This return statement is what was missing!
-#     return skincare_bp
