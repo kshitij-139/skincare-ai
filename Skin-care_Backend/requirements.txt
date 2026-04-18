@@ -11,3 +11,5 @@ sentencepiece
 sentence-transformers
 faiss-cpu
 google-genai
+gunicorn
+timm
